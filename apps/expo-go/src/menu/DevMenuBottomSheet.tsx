@@ -1,7 +1,7 @@
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetBackdropProps,
-  BottomSheetView,
+  BottomSheetScrollView,
   useBottomSheetSpringConfigs,
 } from '@gorhom/bottom-sheet';
 import React, { useCallback, useEffect, useRef } from 'react';
@@ -88,10 +88,11 @@ function DevMenuBottomSheet({ children, uuid }: Props) {
       enablePanDownToClose
       onChange={onChange}>
       <DevMenuBottomSheetContext.Provider value={{ collapse: onCollapse, expand: onExpand }}>
-        <BottomSheetView style={styles.contentContainerStyle}>{children}</BottomSheetView>
+        <BottomSheetScrollView style={styles.contentContainerStyle}>
+          {children}
+        </BottomSheetScrollView>
       </DevMenuBottomSheetContext.Provider>
       {/* Adds bottom offset so that no empty space is shown on overdrag */}
-      <View style={{ height: 100 }} />
     </BottomSheet>
   );
 }
