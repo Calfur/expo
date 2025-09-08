@@ -135,14 +135,21 @@ it('has correct routeInfo when switching tabs as a nested navigator - using pres
     }
   );
 
+  expect(layoutCalls).toHaveBeenCalledTimes(1);
+  expect(layoutCalls).toHaveBeenCalledWith(['(tabs)']);
+
+  expect(indexCalls).toHaveBeenCalledTimes(1);
+  expect(indexCalls).toHaveBeenCalledWith(['(tabs)']);
+
+  expect(exploreCalls).toHaveBeenCalledTimes(0);
+
+  jest.clearAllMocks();
   fireEvent.press(screen.getByLabelText('explore, tab, 2 of 2'));
 
-  expect(layoutCalls).toHaveBeenCalledTimes(2);
-  expect(layoutCalls).toHaveBeenNthCalledWith(1, ['(tabs)']);
-  expect(layoutCalls).toHaveBeenNthCalledWith(2, ['(tabs)', 'explore']);
+  expect(layoutCalls).toHaveBeenCalledTimes(1);
+  expect(layoutCalls).toHaveBeenCalledWith(['(tabs)', 'explore']);
 
-  expect(indexCalls).toHaveBeenCalledTimes(2);
-  expect(indexCalls).toHaveBeenCalledWith(['(tabs)', 'explore']);
+  expect(indexCalls).toHaveBeenCalledTimes(1);
   expect(indexCalls).toHaveBeenCalledWith(['(tabs)', 'explore']);
 
   expect(exploreCalls).toHaveBeenCalledTimes(1);
@@ -151,9 +158,8 @@ it('has correct routeInfo when switching tabs as a nested navigator - using pres
   jest.clearAllMocks();
   fireEvent.press(screen.getByLabelText('index, tab, 1 of 2'));
 
-  expect(layoutCalls).toHaveBeenCalledTimes(2);
+  expect(layoutCalls).toHaveBeenCalledTimes(1);
   expect(layoutCalls).toHaveBeenNthCalledWith(1, ['(tabs)']);
-  expect(layoutCalls).toHaveBeenNthCalledWith(2, ['(tabs)']);
 
   expect(indexCalls).toHaveBeenCalledTimes(1);
   expect(indexCalls).toHaveBeenCalledWith(['(tabs)']);
@@ -164,12 +170,10 @@ it('has correct routeInfo when switching tabs as a nested navigator - using pres
   jest.clearAllMocks();
   fireEvent.press(screen.getByLabelText('explore, tab, 2 of 2'));
 
-  expect(layoutCalls).toHaveBeenCalledTimes(2);
+  expect(layoutCalls).toHaveBeenCalledTimes(1);
   expect(layoutCalls).toHaveBeenNthCalledWith(1, ['(tabs)', 'explore']);
-  expect(layoutCalls).toHaveBeenNthCalledWith(2, ['(tabs)', 'explore']);
 
-  expect(indexCalls).toHaveBeenCalledTimes(2);
-  expect(indexCalls).toHaveBeenCalledWith(['(tabs)', 'explore']);
+  expect(indexCalls).toHaveBeenCalledTimes(1);
   expect(indexCalls).toHaveBeenCalledWith(['(tabs)', 'explore']);
 
   expect(exploreCalls).toHaveBeenCalledTimes(1);
@@ -335,4 +339,43 @@ it('can use replace navigation with history backBehavior', () => {
   act(() => router.back());
 
   expect(screen.getByTestId('one')).toBeVisible();
+});
+
+it('does not re-render when navigating to different tab', () => {
+  const onOneRender = jest.fn();
+  const onTwoRender = jest.fn();
+  renderRouter(
+    {
+      _layout: () => <Tabs />,
+      one: function One() {
+        onOneRender();
+        return <Text testID="one">One</Text>;
+      },
+      two: function Two() {
+        onTwoRender();
+        return <Text testID="two">Two</Text>;
+      },
+    },
+    {
+      initialUrl: '/one',
+    }
+  );
+
+  expect(screen.getByTestId('one')).toBeVisible();
+  expect(onOneRender).toHaveBeenCalledTimes(1);
+  expect(onTwoRender).toHaveBeenCalledTimes(0);
+
+  jest.clearAllMocks();
+  act(() => router.push('/two'));
+
+  expect(screen.getByTestId('two')).toBeVisible();
+  expect(onOneRender).toHaveBeenCalledTimes(0);
+  expect(onTwoRender).toHaveBeenCalledTimes(1);
+
+  jest.clearAllMocks();
+  act(() => router.push('/one'));
+
+  expect(screen.getByTestId('one')).toBeVisible();
+  expect(onOneRender).toHaveBeenCalledTimes(1);
+  expect(onTwoRender).toHaveBeenCalledTimes(0);
 });
